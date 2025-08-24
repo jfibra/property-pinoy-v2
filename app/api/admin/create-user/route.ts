@@ -30,16 +30,52 @@ export async function POST(request: NextRequest) {
       website,
     } = body
 
+    const formatName = (name: string) => {
+      if (!name) return name
+      return name
+        .toLowerCase()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+    }
+
+    const formatEmail = (email: string) => {
+      return email.toLowerCase()
+    }
+
+    const formatPhone = (phone: string) => {
+      if (!phone) return phone
+      // Remove all non-numeric characters
+      return phone.replace(/\D/g, "")
+    }
+
     // Validate required fields
     if (!email || !password || !firstName || !lastName) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    const formattedData = {
+      email: formatEmail(email),
+      firstName: formatName(firstName),
+      lastName: formatName(lastName),
+      middleName: middleName ? formatName(middleName) : null,
+      phone: formatPhone(phone),
+      address: address ? formatName(address) : null,
+      city: city ? formatName(city) : null,
+      country: country ? formatName(country) : null,
+      companyName: companyName ? formatName(companyName) : null,
+      companyAddress: companyAddress ? formatName(companyAddress) : null,
+      companyCity: companyCity ? formatName(companyCity) : null,
+      companyCountry: companyCountry ? formatName(companyCountry) : null,
+      companyPhone: formatPhone(companyPhone),
+      companyEmail: companyEmail ? formatEmail(companyEmail) : null,
     }
 
     const supabase = await createAdminClient()
 
     // Create user in auth.users
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-      email,
+      email: formattedData.email,
       password,
       email_confirm: true, // Skip email confirmation
     })
@@ -52,19 +88,19 @@ export async function POST(request: NextRequest) {
     let companyId = null
 
     // Create company if company information is provided
-    if (companyName) {
+    if (formattedData.companyName) {
       const { data: company, error: companyError } = await supabase
         .from("companies")
         .insert({
-          company_name: companyName,
+          company_name: formattedData.companyName,
           company_type: companyType || null,
           industry: industry || null,
           registration_no: registrationNo || null,
-          address: companyAddress || null,
-          city: companyCity || null,
-          country: companyCountry || null,
-          phone: companyPhone || null,
-          email: companyEmail || null,
+          address: formattedData.companyAddress,
+          city: formattedData.companyCity,
+          country: formattedData.companyCountry,
+          phone: formattedData.companyPhone,
+          email: formattedData.companyEmail,
           website: website || null,
         })
         .select()
@@ -137,16 +173,16 @@ export async function POST(request: NextRequest) {
         company_id: companyId,
         user_type_id: userTypeId,
         status_id: statusId,
-        first_name: firstName,
-        last_name: lastName,
-        middle_name: middleName || null,
+        first_name: formattedData.firstName,
+        last_name: formattedData.lastName,
+        middle_name: formattedData.middleName,
         gender: gender || null,
         birthdate: birthdate || null,
-        email,
-        phone: phone || null,
-        address: address || null,
-        city: city || null,
-        country: country || null,
+        email: formattedData.email,
+        phone: formattedData.phone,
+        address: formattedData.address,
+        city: formattedData.city,
+        country: formattedData.country,
       })
       .select()
 

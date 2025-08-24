@@ -185,11 +185,19 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Map Placeholder */}
           <div className="bg-white p-8 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Find Us</h3>
-            <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center">
-              <span className="text-gray-500">Interactive Map Coming Soon</span>
+            <div className="rounded-lg overflow-hidden">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2606.100755641572!2d123.90383347828292!3d10.31812108509571!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33a99940ee6ed46b%3A0xbd7dddf03bef15c7!2sAyala%20Center%20Cebu!5e0!3m2!1sen!2sph!4v1756047590218!5m2!1sen!2sph"
+                width="100%"
+                height="300"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="rounded-lg"
+              />
             </div>
           </div>
         </div>
