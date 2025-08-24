@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import { PropertyCard } from "@/components/property-card"
 import { Button } from "@/components/ui/button"
@@ -20,7 +19,7 @@ const properties = [
     sqft: 1200,
     type: "Apartment",
     status: "Available",
-    image: "/modern-apartment-building.png",
+    image: "/modern-apartment-building-in-manila.png",
   },
   {
     id: 2,
@@ -32,7 +31,7 @@ const properties = [
     sqft: 2800,
     type: "House",
     status: "Available",
-    image: "/suburban-family-house.png",
+    image: "/suburban-family-house-with-garden.png",
   },
   {
     id: 3,
@@ -44,7 +43,7 @@ const properties = [
     sqft: 2200,
     type: "Condo",
     status: "Pending",
-    image: "/luxury-waterfront-condominium.png",
+    image: "/luxury-waterfront-condominium-with-ocean-view.png",
   },
   {
     id: 4,
@@ -56,7 +55,7 @@ const properties = [
     sqft: 1800,
     type: "Townhouse",
     status: "Available",
-    image: "/historic-townhouse.png",
+    image: "/historic-townhouse-with-colonial-architecture.png",
   },
   {
     id: 5,
@@ -68,7 +67,7 @@ const properties = [
     sqft: 1100,
     type: "House",
     status: "Available",
-    image: "/secluded-mountain-cabin.png",
+    image: "/secluded-mountain-cabin-with-forest-view.png",
   },
   {
     id: 6,
@@ -80,7 +79,7 @@ const properties = [
     sqft: 4200,
     type: "House",
     status: "Available",
-    image: "/beachfront-villa.png",
+    image: "/beachfront-villa-with-tropical-landscaping.png",
   },
 ]
 
@@ -90,10 +89,10 @@ export default function PropertiesPage() {
   const [priceRange, setPriceRange] = useState([100000, 5000000])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Browse Properties</h1>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Browse Properties</h1>
         <p className="text-gray-600">Find your perfect home from our listings</p>
       </div>
 
@@ -101,14 +100,17 @@ export default function PropertiesPage() {
       <div className="mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-          <Input placeholder="Search by location, property name, or keyword..." className="pl-10 pr-4 py-3 text-lg" />
+          <Input
+            placeholder="Search by location, property name, or keyword..."
+            className="pl-10 pr-4 py-3 text-base sm:text-lg"
+          />
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
         {/* Filters Sidebar */}
         <div className={`lg:w-64 ${showFilters ? "block" : "hidden lg:block"}`}>
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Filters</h3>
               <Button variant="ghost" size="sm">
@@ -240,9 +242,9 @@ export default function PropertiesPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
               <Select defaultValue="newest">
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -257,7 +259,7 @@ export default function PropertiesPage() {
 
           {/* Properties Grid */}
           <div
-            className={`grid gap-6 ${
+            className={`grid gap-4 sm:gap-6 ${
               viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
             }`}
           >
@@ -267,7 +269,7 @@ export default function PropertiesPage() {
           </div>
 
           {/* Load More */}
-          <div className="text-center mt-12">
+          <div className="text-center mt-8 sm:mt-12">
             <Button variant="outline" size="lg">
               Load More Properties
             </Button>
