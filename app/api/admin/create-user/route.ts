@@ -4,6 +4,12 @@ import { createAdminClient } from "@/lib/supabase"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log("[v0] Received user creation request:", {
+      email: body.email,
+      firstName: body.firstName,
+      lastName: body.lastName,
+    })
+
     const {
       email,
       password,
@@ -72,8 +78,10 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createAdminClient()
+    console.log("[v0] Admin client created successfully")
 
     // Create user in auth.users
+    console.log("[v0] Attempting to create auth user with email:", formattedData.email)
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: formattedData.email,
       password,
@@ -81,14 +89,24 @@ export async function POST(request: NextRequest) {
     })
 
     if (authError) {
-      console.error("Auth error:", authError)
-      return NextResponse.json({ error: "Failed to create user account" }, { status: 500 })
+      console.error("[v0] Auth error details:", authError)
+      return NextResponse.json(
+        {
+          error: "Failed to create user account",
+          details: authError.message,
+          code: authError.code,
+        },
+        { status: 500 },
+      )
     }
+
+    console.log("[v0] Auth user created successfully:", authUser.user.id)
 
     let companyId = null
 
     // Create company if company information is provided
     if (formattedData.companyName) {
+      console.log("[v0] Creating company:", formattedData.companyName)
       const { data: company, error: companyError } = await supabase
         .from("companies")
         .insert({
@@ -107,16 +125,18 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (companyError) {
-        console.error("Company creation error:", companyError)
+        console.error("[v0] Company creation error:", companyError)
         // Continue without company - don't fail the entire operation
       } else {
         companyId = company.id
+        console.log("[v0] Company created successfully:", companyId)
       }
     }
 
     // Get or create user type
     let userTypeId = null
     if (userType) {
+      console.log("[v0] Processing user type:", userType)
       const { data: existingUserType } = await supabase
         .from("user_types")
         .select("id")
@@ -125,9 +145,10 @@ export async function POST(request: NextRequest) {
 
       if (existingUserType) {
         userTypeId = existingUserType.id
+        console.log("[v0] Found existing user type:", userTypeId)
       } else {
         // Create new user type
-        const { data: newUserType } = await supabase
+        const { data: newUserType, error: userTypeError } = await supabase
           .from("user_types")
           .insert({
             type_name: userType,
@@ -136,21 +157,28 @@ export async function POST(request: NextRequest) {
           .select()
           .single()
 
-        if (newUserType) {
+        if (userTypeError) {
+          console.error("[v0] User type creation error:", userTypeError)
+        } else if (newUserType) {
           userTypeId = newUserType.id
+          console.log("[v0] Created new user type:", userTypeId)
         }
       }
     }
 
     // Get or create default active status
     let statusId = null
-    const { data: activeStatus } = await supabase.from("user_statuses").select("id").eq("status_key", "active").single()
+    console.log("[v0] Getting user status")
+    const { data: activeStatus, error: statusSelectError } = await supabase
+      .from("user_statuses")
+      .select("id")
+      .eq("status_key", "active")
+      .single()
 
-    if (activeStatus) {
-      statusId = activeStatus.id
-    } else {
+    if (statusSelectError) {
+      console.log("[v0] No active status found, creating one:", statusSelectError)
       // Create default active status
-      const { data: newStatus } = await supabase
+      const { data: newStatus, error: statusCreateError } = await supabase
         .from("user_statuses")
         .insert({
           status_key: "active",
@@ -160,12 +188,19 @@ export async function POST(request: NextRequest) {
         .select()
         .single()
 
-      if (newStatus) {
+      if (statusCreateError) {
+        console.error("[v0] Status creation error:", statusCreateError)
+      } else if (newStatus) {
         statusId = newStatus.id
+        console.log("[v0] Created new status:", statusId)
       }
+    } else {
+      statusId = activeStatus.id
+      console.log("[v0] Found existing status:", statusId)
     }
 
     // Create user information record
+    console.log("[v0] Creating user information record")
     const { data: userInfo, error: userInfoError } = await supabase
       .from("user_information")
       .insert({
@@ -187,10 +222,18 @@ export async function POST(request: NextRequest) {
       .select()
 
     if (userInfoError) {
-      console.error("User info error:", userInfoError)
-      return NextResponse.json({ error: "Failed to create user information" }, { status: 500 })
+      console.error("[v0] User info error:", userInfoError)
+      return NextResponse.json(
+        {
+          error: "Failed to create user information",
+          details: userInfoError.message,
+          code: userInfoError.code,
+        },
+        { status: 500 },
+      )
     }
 
+    console.log("[v0] User created successfully:", userInfo)
     return NextResponse.json(
       {
         message: "User created successfully",
@@ -201,7 +244,13 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     )
   } catch (error) {
-    console.error("API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("[v0] API error:", error)
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }
