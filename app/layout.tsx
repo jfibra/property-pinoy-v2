@@ -3,8 +3,10 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 
+import { usePathname } from "next/navigation";
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { ClientFooterWrapper } from "@/components/client-footer-wrapper"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/components/auth/auth-provider"
 // Footer visibility logic moved to ClientFooterWrapper below
@@ -76,13 +78,6 @@ export const metadata: Metadata = {
 }
 
 
-function ClientFooterWrapper() {
-  // Only render the footer if not in /admin route
-  if (typeof window === "undefined") return null;
-  const pathname = window.location.pathname;
-  if (pathname.startsWith("/admin")) return null;
-  return <Footer />;
-}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

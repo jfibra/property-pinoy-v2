@@ -8,7 +8,6 @@ import { useAuth } from "@/components/auth/auth-provider"
 import { createBrowserSupabaseClient } from "@/lib/supabase"
 
 export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
-  console.log("[AdminAuthGuard] Mounted");
   const { user, loading } = useAuth()
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
   const [checking, setChecking] = useState(true)
@@ -16,21 +15,17 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkAdminRole = async () => {
-      console.log("[v0] AdminAuthGuard - loading:", loading, "user:", user)
 
       if (loading) {
-        console.log("[v0] Still loading auth state...")
         return
       }
 
       if (!user) {
-        console.log("[v0] No user found, redirecting to login")
         router.push("/admin/login")
         return
       }
 
       try {
-        console.log("[v0] Checking admin role for user:", user.id)
         const supabase = createBrowserSupabaseClient()
         const { data: userInfo, error } = await supabase
           .from("user_information")
@@ -38,34 +33,26 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
           .eq("auth_user_id", user.id)
           .single<{ user_types?: { type_name?: string } }>()
 
-        console.log("[v0] User info query result:", { userInfo, error })
-
         if (error) {
-          console.log("[AdminAuthGuard] DB error:", error)
           router.push("/admin/login")
           return
         }
         if (!userInfo) {
-          console.log("[AdminAuthGuard] No userInfo returned from DB.", { userInfo })
           router.push("/admin/login")
           return
         }
         if (!userInfo.user_types) {
-          console.log("[AdminAuthGuard] No user_types found in userInfo.", { userInfo })
           router.push("/admin/login")
           return
         }
         if (!userInfo.user_types.type_name) {
-          console.log("[AdminAuthGuard] user_types exists but no type_name.", { userInfo })
           router.push("/admin/login")
           return
         }
         if (userInfo.user_types.type_name !== "Admin") {
-          console.log("[AdminAuthGuard] User is not admin. type_name:", userInfo.user_types.type_name)
           router.push("/admin/login")
           return
         }
-        console.log("[AdminAuthGuard] User is admin, allowing access", { userInfo })
         setIsAdmin(true)
       } catch (error) {
         console.error("[v0] Error checking admin role:", error)
