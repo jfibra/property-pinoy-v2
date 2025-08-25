@@ -26,17 +26,17 @@ export async function middleware(request: NextRequest) {
   )
 
   // Only check basic authentication for admin routes
-  if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/admin/login")) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = "/admin/login"
-      return NextResponse.redirect(url)
-    }
-  }
+  // if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/admin/login")) {
+  //   const {
+  //     data: { user },
+  //   } = await supabase.auth.getUser()
+  //
+  //   if (!user) {
+  //     const url = request.nextUrl.clone()
+  //     url.pathname = "/admin/login"
+  //     return NextResponse.redirect(url)
+  //   }
+  // }
 
   // Redirect authenticated users away from login page
   if (request.nextUrl.pathname === "/admin/login") {

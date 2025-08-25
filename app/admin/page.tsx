@@ -1,9 +1,7 @@
 "use client"
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/components/auth/auth-provider"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Building, Users, TrendingUp, DollarSign } from "lucide-react"
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building, Users, TrendingUp, DollarSign } from "lucide-react";
 
 const stats = [
   {
@@ -68,19 +66,6 @@ const recentActivities = [
 ]
 
 export default function AdminDashboard() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/admin/login")
-    }
-    // Optionally, check for admin role here if needed
-  }, [user, loading, router])
-
-  if (loading || !user) {
-    return null
-  }
 
   return (
     <div className="space-y-6">
@@ -159,5 +144,5 @@ export default function AdminDashboard() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

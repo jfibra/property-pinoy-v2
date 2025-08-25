@@ -1,22 +1,64 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { createBrowserSupabaseClient } from "@/lib/supabase"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
 import { Eye, EyeOff, Lock } from "lucide-react"
-import { createBrowserSupabaseClient } from "@/lib/supabase"
-import Image from "next/image"
 
 export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [userSession, setUserSession] = useState<any>(null)
+  const [supabaseStatus, setSupabaseStatus] = useState<'checking' | 'connected' | 'error'>('checking')
+  const [supabaseError, setSupabaseError] = useState<string | null>(null)
   const router = useRouter()
   const { toast } = useToast()
+  const [userInfo, setUserInfo] = useState<any>(null)
+  const [userInfoError, setUserInfoError] = useState<string | null>(null)
+  // Check for existing user session and Supabase connection
+  useEffect(() => {
+    const supabase = createBrowserSupabaseClient();
+    // Check Supabase connection
+    (async () => {
+      try {
+        // Try a simple query to check connection
+        const { error } = await supabase.from('user_information').select('*').limit(1);
+        if (error) {
+          setSupabaseStatus('error');
+          setSupabaseError(error.message);
+        } else {
+          setSupabaseStatus('connected');
+        }
+      } catch (err: any) {
+        setSupabaseStatus('error');
+        setSupabaseError(err.message);
+      }
+    })();
+    // Check for user session
+    supabase.auth.getSession().then(async ({ data }) => {
+      setUserSession(data.session?.user || null);
+      // Fetch user_information if session exists
+      if (data.session?.user?.id) {
+        const { data: info, error: infoError } = await supabase
+          .from('user_information')
+          .select('*, user_types(type_name)')
+          .eq('auth_user_id', data.session.user.id)
+          .single();
+        setUserInfo(info || null);
+        setUserInfoError(infoError ? infoError.message : null);
+      } else {
+        setUserInfo(null);
+        setUserInfoError(null);
+      }
+    });
+  }, []);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -43,7 +85,7 @@ export default function AdminLoginPage() {
         .from("user_information")
         .select("user_types(type_name)")
         .eq("auth_user_id", data.user.id)
-        .single()
+        .single<{ user_types?: { type_name?: string } }>()
 
       if (userInfoError || !userInfo?.user_types?.type_name || userInfo.user_types.type_name !== "Admin") {
         await supabase.auth.signOut()
@@ -135,6 +177,34 @@ export default function AdminLoginPage() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Debug Info: User Session, Supabase Connection, and User Info */}
+        <div className="mt-6 p-4 bg-gray-100 rounded-md text-xs">
+          <div className="mb-2 font-semibold">Debug Info</div>
+          <div>
+            <span className="font-medium">Supabase connection:</span> {supabaseStatus === 'checking' ? 'Checking...' : supabaseStatus === 'connected' ? 'Connected' : 'Error'}
+            {supabaseStatus === 'error' && (
+              <span className="text-red-500 ml-2">{supabaseError}</span>
+            )}
+          </div>
+          <div className="mt-2">
+            <span className="font-medium">User session:</span>
+            {userSession ? (
+              <pre className="bg-white border rounded p-2 mt-1 overflow-x-auto">{JSON.stringify(userSession, null, 2)}</pre>
+            ) : (
+              <span className="ml-2">No user session found.</span>
+            )}
+          </div>
+          <div className="mt-2">
+            <span className="font-medium">User information (from DB):</span>
+            {userInfoError && <span className="text-red-500 ml-2">{userInfoError}</span>}
+            {userInfo ? (
+              <pre className="bg-white border rounded p-2 mt-1 overflow-x-auto">{JSON.stringify(userInfo, null, 2)}</pre>
+            ) : (
+              <span className="ml-2">No user_information found for this user.</span>
+            )}
+          </div>
+        </div>
 
         <div className="text-center">
           <p className="text-xs text-gray-500">This page is not indexed by search engines</p>
