@@ -62,8 +62,17 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
       }
     }
 
-    checkAdminRole()
+    if (!loading) {
+      checkAdminRole()
+    }
   }, [user, loading, router])
+
+  useEffect(() => {
+    if (loading) {
+      setChecking(true)
+      setIsAdmin(null)
+    }
+  }, [loading])
 
   if (loading || checking) {
     return (
@@ -79,7 +88,24 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!user || !isAdmin) {
+  if (!user && !loading) {
+    router.push("/admin/login")
+    return null
+  }
+
+  if (isAdmin === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Checking permissions...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAdmin) {
+    router.push("/")
     return null
   }
 
