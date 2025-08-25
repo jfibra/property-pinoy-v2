@@ -8,6 +8,7 @@ import { Menu, X, User } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { createBrowserSupabaseClient } from "@/lib/supabase"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -18,7 +19,6 @@ export function Header() {
     const checkAdminStatus = async () => {
       if (user) {
         try {
-          const { createBrowserSupabaseClient } = await import("@/lib/supabase")
           const supabase = createBrowserSupabaseClient()
 
           const { data: userInfo } = await supabase
@@ -48,7 +48,6 @@ export function Header() {
     } catch (error) {
       console.error("Logout error:", error)
       try {
-        const { createBrowserSupabaseClient } = await import("@/lib/supabase")
         const supabase = createBrowserSupabaseClient()
         await supabase.auth.signOut()
         window.location.href = "/"
