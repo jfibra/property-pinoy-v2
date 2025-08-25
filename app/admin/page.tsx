@@ -1,3 +1,8 @@
+
+"use client"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/components/auth/auth-provider"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Building, Users, TrendingUp, DollarSign } from "lucide-react"
 
@@ -63,15 +68,27 @@ const recentActivities = [
   },
 ]
 
-export default function AdminDashboard() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/admin/login");
+    }
+    // Optionally, check for admin role here if needed
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return null;
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
         <p className="text-gray-600">Welcome back! Here's what's happening with Property Pinoy.</p>
       </div>
-
-      {/* Stats Grid */}
+      {/* ...existing code... */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => {
           const Icon = stat.icon
@@ -89,7 +106,6 @@ export default function AdminDashboard() {
           )
         })}
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activities */}
         <Card>
@@ -114,7 +130,6 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-
         {/* Quick Actions */}
         <Card>
           <CardHeader>
