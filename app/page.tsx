@@ -99,11 +99,12 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-4">
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
                     <Select>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full h-14 text-lg">
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
                       <SelectContent>
@@ -118,7 +119,7 @@ export default function HomePage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
                     <Select>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full h-14 text-lg">
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
                       <SelectContent>
@@ -136,7 +137,7 @@ export default function HomePage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
                     <Select>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full h-14 text-lg">
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
                       <SelectContent>
@@ -151,7 +152,7 @@ export default function HomePage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Bathrooms</label>
                     <Select>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full h-14 text-lg">
                         <SelectValue placeholder="Any" />
                       </SelectTrigger>
                       <SelectContent>
@@ -168,7 +169,7 @@ export default function HomePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
                   <Select>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full h-14 text-lg">
                       <SelectValue placeholder="Any" />
                     </SelectTrigger>
                     <SelectContent>
@@ -182,8 +183,8 @@ export default function HomePage() {
                 </div>
 
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input placeholder="Location" className="pl-10" />
+                  <MapPin className="absolute left-3 top-4 h-6 w-6 text-gray-400" />
+                  <Input placeholder="Location" className="pl-14 h-14 text-lg w-full" />
                 </div>
 
                 <Button className="w-full bg-gray-900 hover:bg-gray-800">Search Properties</Button>

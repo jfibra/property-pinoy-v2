@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -11,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 export default function ContactPageClient() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
+  const { register, handleSubmit, formState: { errors }, reset } = useForm()
 
   // <CHANGE> Added data formatting functions
   const formatName = (name: string) => {
@@ -30,59 +32,33 @@ export default function ContactPageClient() {
     return emailRegex.test(email)
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const onSubmit = async (data: any) => {
     setIsSubmitting(true)
-
-    const formData = new FormData(e.currentTarget)
-
-    // <CHANGE> Format data before submission
-    const firstName = formatName(formData.get("firstName") as string)
-    const lastName = formatName(formData.get("lastName") as string)
-    const email = formatEmail(formData.get("email") as string)
-    const phone = formatPhone((formData.get("phone") as string) || "")
-    const company = formatName((formData.get("company") as string) || "")
-    const subject = ((formData.get("subject") as string) || "").toLowerCase()
-    const message = (formData.get("message") as string).toLowerCase()
-
-    // <CHANGE> Validate email format
-    if (!validateEmail(email)) {
-      toast({
-        title: "Invalid email format",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
-      })
-      setIsSubmitting(false)
-      return
+    // Format data
+    const formattedData = {
+      ...data,
+      firstName: formatName(data.firstName),
+      lastName: formatName(data.lastName),
+      name: `${formatName(data.firstName)} ${formatName(data.lastName)}`,
+      email: formatEmail(data.email),
+      phone: data.phone,
+      company: formatName(data.company || ""),
+      subject: (data.subject || "").toLowerCase(),
+      message: (data.message || "").toLowerCase(),
     }
-
-    const data = {
-      firstName,
-      lastName,
-      name: `${firstName} ${lastName}`,
-      email,
-      phone,
-      subject,
-      message,
-      company,
-    }
-
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formattedData),
       })
-
       if (response.ok) {
         toast({
           title: "Message sent successfully!",
           description: "We'll get back to you as soon as possible.",
+          variant: "default",
         })
-        // Reset form
-        e.currentTarget.reset()
+        reset()
       } else {
         throw new Error("Failed to send message")
       }
@@ -113,41 +89,62 @@ export default function ContactPageClient() {
         <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Send us a Message</h2>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                <Input name="firstName" placeholder="Your first name" required />
+                <Input {...register("firstName", { required: "First name is required" })} placeholder="Your first name" aria-invalid={!!errors.firstName} />
+                {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message as string}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-                <Input name="lastName" placeholder="Your last name" required />
+                <Input {...register("lastName", { required: "Last name is required" })} placeholder="Your last name" aria-invalid={!!errors.lastName} />
+                {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message as string}</p>}
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-              <Input name="email" type="email" placeholder="your.email@example.com" required />
+              <Input {...register("email", { required: "Email is required", pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Invalid email address" } })} type="email" placeholder="your.email@example.com" aria-invalid={!!errors.email} />
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message as string}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <Input name="phone" placeholder="Your phone number" />
+              <Input
+                {...register("phone", {
+                  pattern: {
+                    value: /^\d*$/,
+                    message: "Phone number must be numeric",
+                  },
+                  onChange: (e) => {
+                    // Only allow digits
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                  },
+                })}
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="Your phone number"
+                aria-invalid={!!errors.phone}
+              />
+              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message as string}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
-              <Input name="company" placeholder="Your company (optional)" />
+              <Input {...register("company")} placeholder="Your company (optional)" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-              <Input name="subject" placeholder="What is this regarding?" />
+              <Input {...register("subject")} placeholder="What is this regarding?" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
-              <Textarea name="message" placeholder="Tell us how we can help you..." rows={6} required />
+              <Textarea {...register("message", { required: "Message is required" })} placeholder="Tell us how we can help you..." rows={6} aria-invalid={!!errors.message} />
+              {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message.message as string}</p>}
             </div>
 
             <Button type="submit" className="w-full bg-gray-900 hover:bg-gray-800" disabled={isSubmitting}>
@@ -284,4 +281,5 @@ export default function ContactPageClient() {
       </div>
     </div>
   )
+// removed extra bracket
 }

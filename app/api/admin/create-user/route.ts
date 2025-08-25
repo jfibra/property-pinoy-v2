@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       address,
       city,
       country,
-      userType,
+      user_type_id,
       // Company fields
       companyName,
       companyType,
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     if (authError) {
       console.error("Auth error:", authError)
-      return NextResponse.json({ error: "Failed to create user account" }, { status: 500 })
+      return NextResponse.json({ error: "Failed to create user account", details: authError }, { status: 500 })
     }
 
     let companyId = null
@@ -78,33 +78,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get or create user type
-    let userTypeId = null
-    if (userType) {
-      const { data: existingUserType } = await supabase
-        .from("user_types")
-        .select("id")
-        .eq("type_name", userType)
-        .single()
-
-      if (existingUserType) {
-        userTypeId = existingUserType.id
-      } else {
-        // Create new user type
-        const { data: newUserType } = await supabase
-          .from("user_types")
-          .insert({
-            type_name: userType,
-            description: `${userType} user type`,
-          })
-          .select()
-          .single()
-
-        if (newUserType) {
-          userTypeId = newUserType.id
-        }
-      }
-    }
+  // Use user_type_id directly from the request
+  let userTypeId = user_type_id || null;
 
     // Get or create default active status
     let statusId = null

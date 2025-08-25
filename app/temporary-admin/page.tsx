@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -12,7 +12,19 @@ import { UserPlus, Eye, EyeOff } from "lucide-react"
 export default function TemporaryAdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [userTypes, setUserTypes] = useState<{ id: string; type_name: string }[]>([])
+  const [selectedUserType, setSelectedUserType] = useState<string>("");
   const { toast } = useToast()
+
+  useEffect(() => {
+    fetch("/api/user-types")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setUserTypes(data)
+        else setUserTypes([])
+      })
+      .catch(() => setUserTypes([]))
+  }, [])
 
   const formatName = (name: string) => {
     return name.toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())
@@ -33,7 +45,7 @@ export default function TemporaryAdminPage() {
       password: formData.get("password") as string,
       firstName: formatName(formData.get("firstName") as string),
       lastName: formatName(formData.get("lastName") as string),
-      role: formData.get("role") as string,
+      user_type_id: formData.get("user_type_id") as string,
     }
 
     try {
@@ -127,17 +139,17 @@ export default function TemporaryAdminPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-              <Select name="role" required>
+              <Select value={selectedUserType} onValueChange={setSelectedUserType} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select user role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="agent">Agent</SelectItem>
-                  <SelectItem value="client">Client</SelectItem>
-                  <SelectItem value="owner">Property Owner</SelectItem>
+                  {userTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.id}>{type.type_name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              <input type="hidden" name="user_type_id" value={selectedUserType} required />
             </div>
 
             <Button type="submit" className="w-full bg-gray-900 hover:bg-gray-800" disabled={isSubmitting}>
