@@ -14,12 +14,14 @@ import Image from "next/image"
 export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const { toast } = useToast()
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
     const formData = new FormData(e.currentTarget)
     const email = formData.get("email") as string
@@ -37,7 +39,6 @@ export default function AdminLoginPage() {
         throw error
       }
 
-      // Check if user has admin role
       const { data: userInfo, error: userInfoError } = await supabase
         .from("user_information")
         .select("user_types(type_name)")
@@ -58,9 +59,12 @@ export default function AdminLoginPage() {
         window.location.href = "/admin"
       }, 1000)
     } catch (error: any) {
+      const errorMessage = error.message || "Invalid credentials"
+      setError(errorMessage)
+
       toast({
         title: "Login failed",
-        description: error.message || "Invalid credentials",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -86,6 +90,13 @@ export default function AdminLoginPage() {
             <CardDescription>Enter your admin credentials to continue</CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600 font-medium">Login Failed</p>
+                <p className="text-sm text-red-500">{error}</p>
+              </div>
+            )}
+
             <form onSubmit={handleLogin} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>

@@ -1,17 +1,27 @@
-import type { Metadata } from "next"
+"use client"
 import type React from "react"
-
-export const metadata: Metadata = {
-  title: "Admin Dashboard - Property Pinoy",
-  robots: {
-    index: false,
-    follow: false,
-    nocache: true,
-    noarchive: true,
-    nosnippet: true,
-  },
-}
+import { usePathname } from "next/navigation"
+import { AdminAuthGuard } from "@/components/admin/admin-auth-guard"
+import { AdminHeader } from "@/components/admin/admin-header"
+import { AdminSidebar } from "@/components/admin/admin-sidebar"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <div>{children}</div>
+  const pathname = usePathname()
+  const isLoginPage = pathname === "/admin/login"
+
+  if (isLoginPage) {
+    return <div>{children}</div>
+  }
+
+  return (
+    <AdminAuthGuard>
+      <div className="min-h-screen bg-gray-50">
+        <AdminHeader />
+        <div className="flex">
+          <AdminSidebar />
+          <main className="flex-1 ml-64 p-6">{children}</main>
+        </div>
+      </div>
+    </AdminAuthGuard>
+  )
 }
