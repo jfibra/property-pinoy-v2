@@ -1,4 +1,3 @@
-
 "use client"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -68,18 +67,19 @@ const recentActivities = [
   },
 ]
 
-  const { user, loading } = useAuth();
-  const router = useRouter();
+export default function AdminDashboard() {
+  const { user, loading } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/admin/login");
+      router.replace("/admin/login")
     }
     // Optionally, check for admin role here if needed
-  }, [user, loading, router]);
+  }, [user, loading, router])
 
   if (loading || !user) {
-    return null;
+    return null
   }
 
   return (
@@ -88,7 +88,7 @@ const recentActivities = [
         <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
         <p className="text-gray-600">Welcome back! Here's what's happening with Property Pinoy.</p>
       </div>
-      {/* ...existing code... */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => {
           const Icon = stat.icon

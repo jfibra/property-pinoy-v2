@@ -25,46 +25,31 @@ export async function middleware(request: NextRequest) {
     },
   )
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
-
-  if (error && request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/admin/login")) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/admin/login"
-    return NextResponse.redirect(url)
-  }
-
-  // Protect admin routes
+  // Only check basic authentication for admin routes
   if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/admin/login")) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
     if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = "/admin/login"
       return NextResponse.redirect(url)
     }
-
-    try {
-      const { data: userInfo, error: userInfoError } = await supabase
-        .from("user_information")
-        .select("user_types(type_name)")
-        .eq("auth_user_id", user.id)
-        .single()
-
-      if (userInfoError || !userInfo?.user_types?.type_name || userInfo.user_types.type_name !== "Admin") {
-        return NextResponse.redirect(new URL("/", request.url))
-      }
-    } catch (error) {
-      console.error("Error checking user role:", error)
-      return NextResponse.redirect(new URL("/", request.url))
-    }
   }
 
   // Redirect authenticated users away from login page
-  if (request.nextUrl.pathname === "/admin/login" && user) {
-    return NextResponse.redirect(new URL("/admin", request.url))
+  if (request.nextUrl.pathname === "/admin/login") {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (user) {
+      return NextResponse.redirect(new URL("/admin", request.url))
+    }
   }
 
+  // Add security headers for admin routes
   if (request.nextUrl.pathname.startsWith("/admin")) {
     supabaseResponse.headers.set("X-Frame-Options", "DENY")
     supabaseResponse.headers.set("X-Content-Type-Options", "nosniff")

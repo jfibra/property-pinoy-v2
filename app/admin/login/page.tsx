@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import { Eye, EyeOff, Lock } from "lucide-react"
 import { createBrowserSupabaseClient } from "@/lib/supabase"
-import { useAuth } from "@/components/auth/auth-provider"
 import Image from "next/image"
 
 export default function AdminLoginPage() {
@@ -18,28 +16,6 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
-  const { user, loading } = useAuth()
-
-  useEffect(() => {
-    if (!loading && user) {
-      router.push("/admin")
-    }
-  }, [user, loading, router])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (user) {
-    return null
-  }
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -78,8 +54,9 @@ export default function AdminLoginPage() {
         description: "Welcome to the admin dashboard",
       })
 
-      router.push("/admin")
-      router.refresh()
+      setTimeout(() => {
+        window.location.href = "/admin"
+      }, 1000)
     } catch (error: any) {
       toast({
         title: "Login failed",
